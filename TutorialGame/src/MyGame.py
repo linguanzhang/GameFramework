@@ -1,5 +1,6 @@
-import random
+#import random
 import pygame
+
 
 from os import path
 from mlgame.game.paia_game import PaiaGame, GameResultState, GameStatus
@@ -12,6 +13,7 @@ from .Mob import Mob
 from .Player import Player
 from .SoundController import SoundController
 from .TiledMap import TiledMap
+from .Bullets import Bullets
 
 ASSET_PATH = path.join(path.dirname(__file__), "../asset")
 WIDTH = 800
@@ -30,6 +32,7 @@ class MyGame(PaiaGame):
         self.scene = Scene(width=WIDTH, height=HEIGHT, color="#ffffff", bias_x=0, bias_y=0)
         # 宣告存放多個同類別物件的集合
         self.mobs = pygame.sprite.Group()
+        self.bullet=pygame.sprite.Group()
         # 宣告變數儲存遊戲中需紀錄的資訊
         self.used_frame = 0
         self.frame_to_end = frame_limit
@@ -66,6 +69,10 @@ class MyGame(PaiaGame):
         # 更新物件內部資訊
         self.player.update(action)
         self.mobs.update()
+        self.bullet.update()
+        #敵人下子彈
+        for mob in self.mobs:
+            self._create_bullets(is_player=False,init_pos=mob.rect.center)
         # 處理碰撞
         # 玩家和敵人
         hits = pygame.sprite.spritecollide(self.player, self.mobs, True, pygame.sprite.collide_rect_ratio(0.8))
@@ -160,6 +167,8 @@ class MyGame(PaiaGame):
         Get the position of MyGame objects for drawing on the web
         """
         game_obj_list = []
+        for bullets in self.bullet:
+            game_obj_list.append(bullets.game_object_data)
         for mob in self.mobs:
             if isinstance(mob, Mob):
                 game_obj_list.append(mob.game_object_data)
@@ -233,3 +242,7 @@ class MyGame(PaiaGame):
             # 建立mob物件，並加入到mob的集合裡
             mob = Mob(pygame.Rect(0, -100, WIDTH, HEIGHT+100))
             self.mobs.add(mob)
+    def _create_bullets(self,is_player,init_pos):
+        bullets=Bullets(is_player=is_player,init_pos=init_pos)
+        self.bullet.add(bullets)
+
